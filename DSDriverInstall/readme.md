@@ -1,3 +1,4 @@
-To install:
-    -copy main into $JBOSS_HOME/modules/system/layers/base/org/postgresql
-    -add the driver to jboss instance
+### This utility will eventually provide a way to install DataSource drivers into JBoss EAP 6
+
+Implemented drivers:
+ * PostgresQL
