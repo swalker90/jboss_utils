@@ -36,7 +36,6 @@ function usage
     echo "                             specify the filename of the configuration xml"
     echo 
     echo "   -x, --dry-run             output what would happen when you specify other arguments"
-    echo "   -a  <arg-string>          specify arguments to the server" 
 
 }
 
@@ -46,7 +45,7 @@ function install_driver
     cp -Rf ./main/ $JBOSS_HOME/modules/system/layers/base/org/postgresql
 }
 
-function configure_driver_running
+function configure_server_running
 {
     $JBOSS_HOME/bin/jboss-cli.sh -c --controller=$IP_ADDRESS --file=configure-script.cli
 }
