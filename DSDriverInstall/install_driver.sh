@@ -35,6 +35,9 @@ function usage
     echo "   -f  <file-name>, --config-file <file-name>  "
     echo "                             specify the filename of the configuration xml"
     echo 
+    echo "   -t  <dir>, --config-dir <dir>  "
+    echo "                             specify the filename of the configuration xml"
+    echo 
     echo "   -x, --dry-run             output what would happen when you specify other arguments"
 
 }
@@ -52,7 +55,7 @@ function configure_server_running
 
 function configure_server_stopped
 {
-    echo "functionality not implemented yet"
+    python stoppedConfigure.py $CONFIG_DIR/$CONFIG_FILE
 }
 
 function dry_run
@@ -115,6 +118,7 @@ function real_run
 
 JBOSS_HOME=
 CONFIG_FILE=
+CONFIG_DIR=
 RUN=1
 MODE="s"
 IP_ADDRESS=127.0.0.1
@@ -148,6 +152,9 @@ while [ "$1" != "" ]; do
         -c | --no-install)      CONFIGURE=1 
                                 INSTALL=0
                                 ;;
+        -t | --config-dir)      shift
+                                CONFIG_DIR=$1
+                                ;;
         -f | --config-file)     shift
                                 CONFIG_FILE=$1
                                 ;;
@@ -167,12 +174,14 @@ done
 
 ### Set default CONFIG_FILE
 
-test "$MODE" == "s" && test "$CONFIG_FILE" == "" && CONFIG_FILE=standalone.xml
-test "$MODE" == "d" && test "$CONFIG_FILE" == "" && CONFIG_FILE=domain.xml
+test "$MODE" == "s" && test "$CONFIG_FILE" == "" && CONFIG_FILE=standalone.xml && echo "Using default config file (use -f to specify): $CONFIG_FILE"
+test "$MODE" == "d" && test "$CONFIG_FILE" == "" && CONFIG_FILE=domain.xml && echo "Using default config file (use -f to specify): $CONFIG_FILE"
+test "$MODE" == "s" && test "$CONFIG_DIR" == "" && CONFIG_DIR=$JBOSS_HOME/standalone/configuration && echo "Using default config directory (use -t to specify): $CONFIG_DIR"
+test "$MODE" == "d" && test "$CONFIG_DIR" == "" && CONFIG_DIR=$JBOSS_HOME/domain/configuration && echo "Using default config directory (use -t to specify): $CONFIG_DIR"
 
-test "$JBOSS_HOME" == "" && echo "Must specify a jboss instance. Add -h for usage" && exit 1
+test "$JBOSS_HOME" == "" && echo "Must specify a jboss instance." && exit 1
 
-### Set if off
+### Set it off
 
 if [ $DRY_RUN == 1 ]; then
     dry_run
