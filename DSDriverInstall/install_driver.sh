@@ -11,7 +11,7 @@ function usage
 {
     echo "PostgreSQL JBoss EAP 6 Driver Installer"
     echo
-    echo " Syntax: ./install_driver.sh [options] -s <JBOSS_HOME>|-d <JBOSS_HOME>|-r <JBOSS_HOME>"
+    echo " Syntax: ./install_driver.sh [options] [-s <JBOSS_HOME>|-d <JBOSS_HOME>|-r <JBOSS_HOME>] [-p|-m]"
     echo  
     echo " Required arguments:"
     echo "   -s <JBOSS_HOME> , --standalone <JBOSS_HOME>"
@@ -23,6 +23,8 @@ function usage
     echo "   -r <JBOSS_HOME>, --running <JBOSS_HOME>"
     echo "                             specifys that the JBoss instance is running"
     echo         
+    echo "   -p, --postgresql          install/configure postgresql"
+    echo "   -m, --mysql               install/configure mysql"
     echo " Options: "
     echo "   -h, --help                display this dialog"
     echo
@@ -44,18 +46,18 @@ function usage
 
 function install_driver
 {
-    mkdir -p $JBOSS_HOME/modules/system/layers/base/org/postgresql/main/
-    cp -Rf ./main/ $JBOSS_HOME/modules/system/layers/base/org/postgresql
+    mkdir -p $JBOSS_HOME/modules/system/layers/base/$MODULE_PATH/main/
+    cp -Rf $DRIVER_DIR/main $JBOSS_HOME/modules/system/layers/base/$MODULE_PATH
 }
 
 function configure_server_running
 {
-    $JBOSS_HOME/bin/jboss-cli.sh -c --controller=$IP_ADDRESS --file=configure-script.cli
+    $JBOSS_HOME/bin/jboss-cli.sh -c --controller=$IP_ADDRESS --file=$DRIVER_DIR/runningConfigure.cli
 }
 
 function configure_server_stopped
 {
-    python stoppedConfigure.py $CONFIG_DIR/$CONFIG_FILE
+    python stoppedConfigure.py $CONFIG_DIR/$CONFIG_FILE $DRIVER
 }
 
 function dry_run
@@ -119,6 +121,9 @@ function real_run
 JBOSS_HOME=
 CONFIG_FILE=
 CONFIG_DIR=
+DRIVER=
+DRIVER_CONFIG=
+DRIVER_DIR=
 RUN=1
 MODE="s"
 IP_ADDRESS=127.0.0.1
@@ -164,6 +169,14 @@ while [ "$1" != "" ]; do
         -a)                     shift
                                 ARGS=$1
                                 ;;
+        -p | --postgresql)      DRIVER=postgresql
+                                DRIVER_DIR=./drivers/postgresql
+                                MODULE_PATH=org/postgresql
+                                ;;
+        -m | --mysql)           DRIVER=mysql
+                                DRIVER_DIR=./drivers/mysql
+                                MODULE_PATH=com/mysql
+                                ;;
         -x| --dry-run)          DRY_RUN=1
                                 ;;
         * )                     usage
@@ -180,6 +193,7 @@ test "$MODE" == "s" && test "$CONFIG_DIR" == "" && CONFIG_DIR=$JBOSS_HOME/standa
 test "$MODE" == "d" && test "$CONFIG_DIR" == "" && CONFIG_DIR=$JBOSS_HOME/domain/configuration && echo "Using default config directory (use -t to specify): $CONFIG_DIR"
 
 test "$JBOSS_HOME" == "" && echo "Must specify a jboss instance." && exit 1
+test "$DRIVER" == "" && echo "Must specify the type of driver. Use either -p or --postgresql for postgresql or use -m or --mysql for mysql" && exit 1
 
 ### Set it off
 
